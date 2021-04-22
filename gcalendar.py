@@ -9,6 +9,9 @@ from oauth2client.file import Storage
 
 import datetime
 
+import pytz
+
+
 try:
     import argparse
     flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
@@ -50,18 +53,29 @@ def getEvent():
     now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
     # print('Getting the upcoming 10 events')
     eventsResult = service.events().list(
-        calendarId='primary', timeMin=now, maxResults=1, singleEvents=True,
-        orderBy='startTime').execute()
-    event = eventsResult.get('items', [])[0]
 
-    if not event:
-        return {'time': '', 'event': 'No Event'}
+        calendarId='primary', timeMin=now, maxResults=2, singleEvents=True,
+        orderBy='startTime').execute()
+    events = eventsResult.get('items', [])
+
+    if not events:
+        # return {'time': datetime.datetime.now(pytz.timezone('Asia/Tokyo')) + datetime.timedelta(hours=3), 'event': 'No Event', 'nextTime': None, 'nextEvent': 'No Event'} # 直近の予定がない場合、3時間後にまたデータを取りに行く
+        return {'time': datetime.datetime.now(pytz.timezone('Asia/Tokyo')) + datetime.timedelta(hours=3), 'event': 'No Event', 'nextTime': datetime.datetime.now(pytz.timezone('Asia/Tokyo')) + datetime.timedelta(hours=3), 'nextEvent': 'No Event'} # 直近の予定がない場合、3時間後にまたデータを取りに行く
     else:
-        print(event)
+        # print(len(events))
+        event = events[0]
         time = event['start'].get('dateTime', event['start'].get('date'))
         dt = datetime.datetime.fromisoformat(time)
+        if(len(events) == 2):
+            nextEvent = events[1]
+            nextTime = nextEvent['start'].get('dateTime', nextEvent['start'].get('date'))
+            nextdt = datetime.datetime.fromisoformat(nextTime)
+            return {'time': dt, 'event': event['summary'], 'nextTime': nextdt, 'nextEvent': nextEvent['summary']}
+        else:
+            # return {'time': dt, 'event': event['summary'], 'nextTime': None, 'nextEvent': 'No Event'}
+            return {'time': dt, 'event': event['summary'], 'nextTime': dt, 'nextEvent': 'No Event'}
         # print(dt)
-        return {'time': dt, 'event': event['summary']}
+        # return {'time': dt, 'event': event['summary']}
     
     # if not events:
     #     print('No upcoming events found.')
