@@ -8,7 +8,9 @@ from oauth2client import tools
 from oauth2client.file import Storage
 
 import datetime
+
 import pytz
+
 
 try:
     import argparse
@@ -51,6 +53,7 @@ def getEvent():
     now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
     # print('Getting the upcoming 10 events')
     eventsResult = service.events().list(
+
         calendarId='primary', timeMin=now, maxResults=2, singleEvents=True,
         orderBy='startTime').execute()
     events = eventsResult.get('items', [])

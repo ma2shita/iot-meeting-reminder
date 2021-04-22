@@ -4,6 +4,7 @@ import showOnEpaper
 import datetime
 from pygame import mixer
 import time
+
 import pytz
 
 startTime = remindTime = datetime.datetime.now()
@@ -11,10 +12,12 @@ eventName = ''
 nextTime = ''
 nextEvent = ''
 
+
 def notify():
     mixer.init()
     mixer.music.load('notification.mp3')
     mixer.music.play(1)
+
 
 def remind():
     mixer.init()
@@ -47,17 +50,20 @@ def task():
     startTime = schedule['time']
     # startTime = startTime.replace(tzinfo=None)
     # print(startTime.tzinfo)
+
     startStr = startTime.strftime('%H:%M')
     # remind = schedule['time'] - datetime.time(0, 15, 0, 0)
     
     remindTime = schedule['time'] - datetime.timedelta(0, 0, 0, 0, 15, 0, 0)
     remindStr = remindTime.strftime('%H:%M')
     # print(type(start), type(remind))
+
     event = eventName = schedule['event']
     
     nextTime = schedule['nextTime']
     nextEvent = schedule['nextEvent']
     
+
     if(event != 'No Event'):
         drawImage.newImage(remindStr, startStr, event)
         showOnEpaper.show(event)
@@ -134,3 +140,4 @@ def temp():
 
 if __name__ == "__main__":
     temp()
+
