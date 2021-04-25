@@ -60,9 +60,9 @@ def getEvent():
 
     if not events:
         # return {'time': datetime.datetime.now(pytz.timezone('Asia/Tokyo')) + datetime.timedelta(hours=3), 'event': 'No Event', 'nextTime': None, 'nextEvent': 'No Event'} # 直近の予定がない場合、3時間後にまたデータを取りに行く
-        return {'time': datetime.datetime.now(pytz.timezone('Asia/Tokyo')) + datetime.timedelta(hours=3), 'event': 'No Event', 'nextTime': datetime.datetime.now(pytz.timezone('Asia/Tokyo')) + datetime.timedelta(hours=3), 'nextEvent': 'No Event'} # 直近の予定がない場合、3時間後にまたデータを取りに行く
+        # return {'time': datetime.datetime.now(pytz.timezone('Asia/Tokyo')) + datetime.timedelta(hours=3), 'event': 'No Event', 'nextTime': datetime.datetime.now(pytz.timezone('Asia/Tokyo')) + datetime.timedelta(hours=3), 'nextEvent': 'No Event'} # 直近の予定がない場合、3時間後にまたデータを取りに行く
+        return {'time': datetime.datetime.now(pytz.timezone('Asia/Tokyo')), 'event': 'No Event', 'nextTime': datetime.datetime.now(pytz.timezone('Asia/Tokyo')), 'nextEvent': 'No Event'}
     else:
-        # print(len(events))
         event = events[0]
         time = event['start'].get('dateTime', event['start'].get('date'))
         dt = datetime.datetime.fromisoformat(time)
@@ -72,15 +72,4 @@ def getEvent():
             nextdt = datetime.datetime.fromisoformat(nextTime)
             return {'time': dt, 'event': event['summary'], 'nextTime': nextdt, 'nextEvent': nextEvent['summary']}
         else:
-            # return {'time': dt, 'event': event['summary'], 'nextTime': None, 'nextEvent': 'No Event'}
             return {'time': dt, 'event': event['summary'], 'nextTime': dt, 'nextEvent': 'No Event'}
-        # print(dt)
-        # return {'time': dt, 'event': event['summary']}
-    
-    # if not events:
-    #     print('No upcoming events found.')
-    # for event in events:
-    #     start = event['start'].get('dateTime', event['start'].get('date'))[11:16]
-    #     print(start, event['summary'])
-
-# print(getEvent()['event'])
