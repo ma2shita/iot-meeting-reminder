@@ -12,12 +12,14 @@ def notify():
     mixer.init()
     mixer.music.load('notification.mp3')
     mixer.music.play(1)
+    time.sleep(5)
 
 
 def remind():
     mixer.init()
     mixer.music.load('remind.mp3')
     mixer.music.play(1)
+    time.sleep(5)
 
 def schedules():
     schedule = gcalendar.getEvent()
