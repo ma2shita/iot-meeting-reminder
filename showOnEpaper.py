@@ -37,3 +37,6 @@ def show(event):
         logging.info("ctrl + c:")
         epd2in7.epdconfig.module_exit()
         exit()
+
+if __name__ == '__main__':
+    show('')

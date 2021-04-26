@@ -16,3 +16,6 @@ def newImage(remind, start, event):
     # img = img.transpose(Image.ROTATE_90)
     img = img.convert(mode='1')
     img.save('event.bmp', 'bmp')
+
+if __name__ == '__main__':
+    newImage('11:45', '12:00', 'テストイベント')

@@ -43,14 +43,12 @@ def getEvent():
     now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
     # print('Getting the upcoming 10 events')
     eventsResult = service.events().list(
-
         calendarId='primary', timeMin=now, maxResults=2, singleEvents=True,
         orderBy='startTime').execute()
     events = eventsResult.get('items', [])
 
     if not events:
-        # return {'time': datetime.datetime.now(pytz.timezone('Asia/Tokyo')) + datetime.timedelta(hours=3), 'event': 'No Event', 'nextTime': None, 'nextEvent': 'No Event'} # 直近の予定がない場合、3時間後にまたデータを取りに行く
-        # return {'time': datetime.datetime.now(pytz.timezone('Asia/Tokyo')) + datetime.timedelta(hours=3), 'event': 'No Event', 'nextTime': datetime.datetime.now(pytz.timezone('Asia/Tokyo')) + datetime.timedelta(hours=3), 'nextEvent': 'No Event'} # 直近の予定がない場合、3時間後にまたデータを取りに行く
+        print('予定が登録されていません')
         return {'time': datetime.datetime.now(pytz.timezone('Asia/Tokyo')), 'event': 'No Event', 'nextTime': datetime.datetime.now(pytz.timezone('Asia/Tokyo')), 'nextEvent': 'No Event'}
     else:
         event = events[0]
@@ -60,6 +58,11 @@ def getEvent():
             nextEvent = events[1]
             nextTime = nextEvent['start'].get('dateTime', nextEvent['start'].get('date'))
             nextdt = datetime.datetime.fromisoformat(nextTime)
+            print('最新の予定: {} {}\n次の予定: {}{}'.format(dt, event['summary'], nextdt, nextEvent['summary']))
             return {'time': dt, 'event': event['summary'], 'nextTime': nextdt, 'nextEvent': nextEvent['summary']}
         else:
+            print('最新の予定: {} {}\n次の予定: {}{}'.format(dt, event['summary'], '', 'なし'))
             return {'time': dt, 'event': event['summary'], 'nextTime': dt, 'nextEvent': 'No Event'}
+
+if __name__ == '__main__':
+    getEvent()
