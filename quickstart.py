@@ -13,10 +13,31 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
+import urllib.request
+import json
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
 
+
+def get_userdata():
+  """Get userdata from SORACOM metadata service.
+
+  Returns:
+    str: Raw value in userdata.
+
+  Examples:
+    >>> get_userdata()
+    b'FooBar'
+
+  Note:
+    An environment that can access the SORACOM Air metadata service is required.
+    For example, there is a way to use a USB dongle + SORACOM IoT SIM.
+  """
+  req = urllib.request.Request("http://metadata.soracom.io/v1/userdata")
+  with urllib.request.urlopen(req) as res:
+    body = res.read()
+  return body
 
 def main():
     """Shows basic usage of the Google Calendar API.
@@ -33,9 +54,14 @@ def main():
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
-            creds = flow.run_local_server(port=0)
+            try:
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    'credentials.json', SCOPES)
+            except FileNotFoundError:
+                print("## Get the credential from Metadata(userdata) instead of credentials.json")
+                client_config = json.loads(get_userdata())
+                flow = InstalledAppFlow.from_client_config(client_config, SCOPES)
+            creds = flow.run_console()
         # Save the credentials for the next run
         with open('token.json', 'w') as token:
             token.write(creds.to_json())
