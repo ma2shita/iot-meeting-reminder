@@ -1,7 +1,7 @@
 from PIL import Image, ImageDraw, ImageFont
 
 def newImage(remind, start, event):
-    img = Image.open('background2.bmp')
+    img = Image.open('background.bmp')
     img = img.resize((284, 176))
     img = img.convert(mode='1')
     draw = ImageDraw.Draw(img)

@@ -10,14 +10,14 @@ import pytz
 
 def notify():
     mixer.init()
-    mixer.music.load('notification.mp3')
+    mixer.music.load('decision47.mp3')
     mixer.music.play(1)
     time.sleep(5)
 
 
 def remind():
     mixer.init()
-    mixer.music.load('remind.mp3')
+    mixer.music.load('tirin1.mp3')
     mixer.music.play(1)
     time.sleep(5)
 
