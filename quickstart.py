@@ -1,71 +1,80 @@
+# Original is https://github.com/googleworkspace/python-samples/commit/41f82a79bcd67ba4de329126a8fdcc4e3c0826ff
+# Change history is after https://github.com/ma2shita/iot-meeting-reminder/commit/69828d5b2b5c0ba88262d6af2bf31d26b343c22e
+# 
+# NOTE:
+#   The license of the original quickstart.py is Apache 2.0.
+#   This file has been modified to comply with the license of this entire repository.
+
+# [START calendar_quickstart]
 from __future__ import print_function
-import httplib2
-import os
-
-from apiclient import discovery
-from oauth2client import client
-from oauth2client import tools
-from oauth2client.file import Storage
-
 import datetime
+import os.path
+from googleapiclient.discovery import build
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+import urllib.request
+import json
 
-try:
-    import argparse
-    flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
-except ImportError:
-    flags = None
-
-# If modifying these scopes, delete your previously saved credentials
-# at ~/.credentials/calendar-python-quickstart.json
-SCOPES = 'https://www.googleapis.com/auth/calendar.readonly'
-CLIENT_SECRET_FILE = 'client_secret.json'
-APPLICATION_NAME = 'Google Calendar API Python Quickstart'
+# If modifying these scopes, delete the file token.json.
+SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
 
 
-def get_credentials():
-    """Gets valid user credentials from storage.
+def get_userdata():
+  """Get userdata from SORACOM metadata service.
 
-    If nothing has been stored, or if the stored credentials are invalid,
-    the OAuth2 flow is completed to obtain the new credentials.
+  Returns:
+    str: Raw value in userdata.
 
-    Returns:
-        Credentials, the obtained credential.
-    """
-    home_dir = os.path.expanduser('~')
-    credential_dir = os.path.join(home_dir, '.credentials')
-    if not os.path.exists(credential_dir):
-        os.makedirs(credential_dir)
-    credential_path = os.path.join(credential_dir,
-                                   'calendar-python-quickstart.json')
+  Examples:
+    >>> get_userdata()
+    b'FooBar'
 
-    store = Storage(credential_path)
-    credentials = store.get()
-    if not credentials or credentials.invalid:
-        flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE, SCOPES)
-        flow.user_agent = APPLICATION_NAME
-        if flags:
-            credentials = tools.run_flow(flow, store, flags)
-        else: # Needed only for compatibility with Python 2.6
-            credentials = tools.run(flow, store)
-        print('Storing credentials to ' + credential_path)
-    return credentials
+  Note:
+    An environment that can access the SORACOM Air metadata service is required.
+    For example, there is a way to use a USB dongle + SORACOM IoT SIM.
+  """
+  req = urllib.request.Request("http://metadata.soracom.io/v1/userdata")
+  with urllib.request.urlopen(req) as res:
+    body = res.read()
+  return body
 
 def main():
     """Shows basic usage of the Google Calendar API.
-
-    Creates a Google Calendar API service object and outputs a list of the next
-    10 events on the user's calendar.
+    Prints the start and name of the next 10 events on the user's calendar.
     """
-    credentials = get_credentials()
-    http = credentials.authorize(httplib2.Http())
-    service = discovery.build('calendar', 'v3', http=http)
+    creds = None
+    # The file token.json stores the user's access and refresh tokens, and is
+    # created automatically when the authorization flow completes for the first
+    # time.
+    if os.path.exists('token.json'):
+        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+    # If there are no (valid) credentials available, let the user log in.
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            try:
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    'credentials.json', SCOPES)
+            except FileNotFoundError:
+                print("## Get the credential from Metadata(userdata) instead of credentials.json")
+                client_config = json.loads(get_userdata())
+                flow = InstalledAppFlow.from_client_config(client_config, SCOPES)
+            creds = flow.run_console()
+        # Save the credentials for the next run
+        with open('token.json', 'w') as token:
+            token.write(creds.to_json())
 
+    service = build('calendar', 'v3', credentials=creds)
+
+    # Call the Calendar API
     now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
     print('Getting the upcoming 10 events')
-    eventsResult = service.events().list(
-        calendarId='primary', timeMin=now, maxResults=10, singleEvents=True,
-        orderBy='startTime').execute()
-    events = eventsResult.get('items', [])
+    events_result = service.events().list(calendarId='primary', timeMin=now,
+                                        maxResults=10, singleEvents=True,
+                                        orderBy='startTime').execute()
+    events = events_result.get('items', [])
 
     if not events:
         print('No upcoming events found.')
@@ -76,3 +85,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+# [END calendar_quickstart]
